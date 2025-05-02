@@ -7,5 +7,14 @@ export default defineConfig({
   server: {
     port: 3000,
     host: '0.0.0.0'
+  },
+  optimizeDeps: {
+    include: ['@atlaskit/textfield', '@atlaskit/app-provider', '@atlaskit/css-reset'],
+    force: true
+  },
+  build: {
+    commonjsOptions: {
+      include: [/@atlaskit\/.*/, /node_modules/]
+    }
   }
 })
