@@ -1,0 +1,14 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+- For all the labels and titles, always use sentence-casing.
+- When I ask for components, always choose first from the components that are already referenced through @atlaskit npm packages. If you cannot find the component among the ones already imported, try searching for components that available through @atlaskit first. If you can't find it, raise it to user so they can provide you with the correct component.
+- Before applying the colors, try finding @atlaskit tokens first and apply it.
+- Before applying the padding and spacing sizes, try finding @atlaskit space tokens first and apply it.
+- To apply colors for headings, use color prop and color token, for example: <Heading size="large" color="color.text.inverse">
+- When using default (a.k.a. regular) <Button>, don't use the appearance property as it's not needed.
