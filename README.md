@@ -1,4 +1,4 @@
-# VibeCode: Designer-Friendly React Boilerplate with Atlassian Design System
+# Designer-friendly vibecode react boilerplate with Atlassian Design System
 
 A modern, designer-friendly React boilerplate that makes it easy for designers and product managers to create beautiful, consistent interfaces using Atlassian Design System (ADS).
 
