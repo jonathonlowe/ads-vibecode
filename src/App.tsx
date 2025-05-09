@@ -10,16 +10,36 @@ import { animate, stagger } from 'motion';
 import { splitText } from 'motion-plus';
 
 // Styled components
-const Container = styled(motion.div)`
-  padding: ${token('space.200')};
-  max-width: 800px;
-  margin: 0 auto;
-  min-height: 100vh;
+const MorphContainer = styled(motion.div)`
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9999;
+  background: ${token('elevation.surface.overlay')};
+  box-shadow: ${token('elevation.shadow.overlay')};
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+`;
+
+const FloatingButton = styled(motion.button)`
+  width:64px;
+  height: 64px;
+  border-radius: 12px;
+  background: ${token('elevation.surface.overlay')};
+  box-shadow: ${token('elevation.shadow.overlay')};
+  border: none;
+  display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9999;
+  cursor: pointer;
+  padding: 0;
 `;
 
 const Section = styled(motion.div)`
@@ -47,21 +67,23 @@ const DraggableTextField = styled(motion.div)`
 `;
 
 const CardsContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: ${token('space.200')};
-  padding: ${token('space.200')};
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${token('space.100')};
+  width: 100%;
+  margin-top: ${token('space.300')};
 `;
 
 const Card = styled(motion.div)`
-  width: 200px;
-  height: 200px;
+  width: 100%;
+  min-width: 0;
+  height: 120px;
   border-radius: 12px;
   background: ${token('elevation.surface.overlay')};
-  box-shadow: ${token('elevation.shadow.raised')};
+  border: 1px solid ${token('color.border')};
   display: flex;
-  align-items: left;
-  justify-content: left;
+  align-items: flex-start;
+  justify-content: flex-start;
   text-align: left;
   font-size: 14px;
   color: ${token('color.text')};
@@ -71,7 +93,7 @@ const Card = styled(motion.div)`
   position: relative;
 `;
 
-const Tooltip = styled.div`
+const Tooltip = styled(motion.div)`
   position: absolute;
   top: -32px;
   left: 50%;
@@ -79,12 +101,47 @@ const Tooltip = styled.div`
   background: ${token('color.background.neutral.bold')};
   color: ${token('color.text.inverse')};
   padding: ${token('space.050')} ${token('space.100')};
-  border-radius: ${token('border.radius.100')};
+  border-radius: 3px;
   font-size: 12px;
   box-shadow: ${token('elevation.shadow.overlay')};
   pointer-events: none;
   z-index: 10;
-  opacity: 0.95;
+  opacity: 1;
+  overflow: hidden;
+`;
+
+const BigTopIcon = styled(motion.div)`
+  width: 56px;
+  height: 64px;
+  margin-bottom: ${token('space.200')};
+`;
+
+const SmallTopIcon = styled(motion.div)`
+  width: 32px;
+  height: 37px;
+  position: absolute;
+  top: 14px;
+  left: 16px;
+`;
+
+const CloseButton = styled(motion.button)`
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 10000;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const HeadingSpacer = styled.div`
+  height: 16px;
 `;
 
 const tips = [
@@ -150,7 +207,7 @@ function WavyText() {
 
   return (
     <div className="wavy-container" ref={containerRef} style={{ visibility: 'hidden', display: 'inline-block' }}>
-      <Heading size="xxlarge">
+      <Heading size="large">
         <span className="wavy">Atlas VibeKit</span>
       </Heading>
       <style>{`
@@ -164,144 +221,222 @@ function WavyText() {
 }
 
 function App() {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [selectedTips, setSelectedTips] = useState<string[]>([]);
-  const [showCards, setShowCards] = useState(false);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [showContent, setShowContent] = useState(false);
+  const [collapsing, setCollapsing] = useState(false);
+  const [showSmallIcon, setShowSmallIcon] = useState(true);
+  const [showBigIcon, setShowBigIcon] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [selectedTips, setSelectedTips] = useState<string[]>([]);
 
   useEffect(() => {
-    // Shuffle and select 4 random tips
     const shuffled = [...tips].sort(() => 0.5 - Math.random());
     setSelectedTips(shuffled.slice(0, 4));
-    // Start animation after 0.5s
-    const timer = setTimeout(() => setShowCards(true), 500);
-    return () => clearTimeout(timer);
   }, []);
 
-  const warpAnimation = {
-    initial: {
-      opacity: 0,
-      rotateX: -10,
-      skewY: -2.5,
-      scaleY: 1.2,
-      scaleX: 0.8,
+  // Content fade-in/out timing
+  useEffect(() => {
+    let contentTimer: NodeJS.Timeout;
+    let iconTimer: NodeJS.Timeout;
+    let collapseTimer: NodeJS.Timeout;
+    if (isOpen && !collapsing) {
+      setShowSmallIcon(false);
+      setShowBigIcon(true);
+      contentTimer = setTimeout(() => setShowContent(true), 350);
+    } else if (!isOpen && !collapsing) {
+      setShowSmallIcon(true);
+      setShowBigIcon(false);
+    }
+    // When collapsing, fade out content, then fade out big icon, then collapse
+    if (collapsing) {
+      setShowContent(false);
+      iconTimer = setTimeout(() => {
+        setShowBigIcon(false);
+        // Only after big icon is gone, collapse the container and show small icon
+        collapseTimer = setTimeout(() => {
+          setIsOpen(false);
+          setCollapsing(false);
+          setShowSmallIcon(true);
+        }, 200); // match big icon exit duration
+      }, 300); // allow content to fade out before big icon
+    }
+    return () => {
+      clearTimeout(contentTimer);
+      clearTimeout(iconTimer);
+      clearTimeout(collapseTimer);
+    };
+  }, [isOpen, collapsing]);
+
+  // Morphing animation variants
+  const morphVariants = {
+    closed: {
+      width: 64,
+      height: 64,
+      borderRadius: 12,
+      padding: 0,
+      transition: { type: 'spring', stiffness: 300, damping: 30, delay: 0.2 }
     },
-    animate: {
-      opacity: 1,
-      rotateX: 0,
-      skewY: 0,
-      scaleY: 1,
-      scaleX: 1,
-      transition: {
-        duration: 1.4,
-        ease: [0.65, 0, 0.35, 1],
-        delay: 0.5
-      },
-    },
+    open: {
+      width: 400,
+      height: 500,
+      borderRadius: 12,
+      padding: 24,
+      transition: { type: 'spring', stiffness: 300, damping: 30 }
+    }
   };
 
-  // Each card animates in with a staggered delay
-  const cardAnimation = (index: number) => ({
-    initial: { opacity: 0, y: -12 },
-    animate: {
-      opacity: showCards ? 1 : 0,
-      y: showCards ? 0 : -12,
-      transition: {
-        delay: 0.18 * index,
-        type: "spring",
-        stiffness: 300,
-        damping: 20,
-        mass: 1
-      }
-    }
-  });
+  // Fade-in animation variants
+  const fadeIn = {
+    hidden: { opacity: 0, y: 10 },
+    visible: (i = 0) => ({
+      opacity: 1,
+      y: 0,
+      transition: { delay: 0.2 + i * 0.15, duration: 0.5 }
+    })
+  };
+
+  // Handle open/close with delayed collapse
+  const handleOpen = () => {
+    setIsOpen(true);
+    setCollapsing(false);
+  };
+  const handleClose = () => {
+    setShowContent(false);
+    setCollapsing(true);
+    setTimeout(() => {
+      setIsOpen(false);
+      setCollapsing(false);
+    }, 400); // Wait for fade out before collapsing
+  };
 
   return (
-    <Container
-          style={{
-        transformPerspective: 1000,
-        originX: 0.5,
-        originY: 0,
-      }}
+    <MorphContainer
+      initial="closed"
+      animate={isOpen && !collapsing ? 'open' : 'closed'}
+      variants={morphVariants}
+      style={{ minHeight: 64, maxHeight: isOpen ? 500 : 64, cursor: isOpen ? 'default' : 'pointer' }}
+      onClick={() => { if (!isOpen && !collapsing) handleOpen(); }}
     >
-      <Section
-        initial="initial"
-        animate="animate"
-        variants={warpAnimation}
-      >
-        <Stack space="space.200">
-          {/*<IllustrationContainer>
-            <img src={heroImage} alt="VibeCode Illustration" />
-          </IllustrationContainer>*/}
-          <WavyText />
-          <Heading size="small">Ask Cursor to build using Atlassian Design System.</Heading>
-        </Stack>
-      </Section>
-      <CardsContainer>
-        {selectedTips.map((tip, index) => (
-          <Card
-            key={tip}
-            initial="initial"
-            animate="animate"
-            variants={cardAnimation(index)}
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(tip);
-                setCopiedIndex(index);
-                setTimeout(() => setCopiedIndex(null), 3000);
-              } catch (e) {
-                // fallback for clipboard API
-                const textarea = document.createElement('textarea');
-                textarea.value = tip;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                setCopiedIndex(index);
-                setTimeout(() => setCopiedIndex(null), 3000);
-              }
-            }}
+      {/* Small icon: visible when closed, fades in after collapse */}
+      <AnimatePresence>
+        {showSmallIcon && (
+          <SmallTopIcon
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            {copiedIndex === index && <Tooltip>Copied!</Tooltip>}
-            {tip}
-          </Card>
-        ))}
-      </CardsContainer>
-      <DraggableTextField
-        drag
-        dragMomentum={true}
-        dragElastic={0.1}
-        dragTransition={{
-          bounceStiffness: 600,
-          bounceDamping: 20,
-          power: 0.1,
-          timeConstant: 200
-        }}
-                  style={{ 
-          x,
-          y,
-          rotate: 15,
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-        }}
-        onDragEnd={(event, info) => {
-          setPosition({
-            x: position.x + info.offset.x,
-            y: position.y + info.offset.y,
-          });
-          x.set(position.x + info.offset.x);
-          y.set(position.y + info.offset.y);
-        }}
-      >
-        {/*<Textfield
-          placeholder="Drag me around!"
-          width="medium"
-        />*/}
-      </DraggableTextField>
-    </Container>
+            <svg width="32" height="37" viewBox="0 0 32 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g filter="url(#filter0_d_1_2)">
+                <path d="M16 17L31 9H16H1L16 17Z" fill="#CFE1FD"/>
+                <path d="M16 17L31 9L23.5 21.5L16 34V17Z" fill="#8FB8F6"/>
+                <path d="M1 9L16 1M1 9L16 17M1 9H16M1 9V26M16 1L31 9M16 1V9M31 9L16 17M31 9H16M31 9V26M31 9L23.5 21.5M16 17V34M16 17L1 26M1 26L16 34M16 34L31 26M16 34L23.5 21.5M31 26L23.5 21.5" stroke="#1868DB"/>
+              </g>
+              <defs>
+                <filter id="filter0_d_1_2" x="0.5" y="0.5" width="31" height="33" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                  <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                  <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                  <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                  <feOffset dy="1"/>
+                  <feGaussianBlur stdDeviation="0.5"/>
+                  <feComposite in2="hardAlpha" operator="out"/>
+                  <feColorMatrix type="matrix" values="0 0 0 0 0.0980392 0 0 0 0 0.407843 0 0 0 0 0.858824 0 0 0 0.2 0"/>
+                  <feBlend mode="normal" in2="shape" result="effect1_dropShadow_1_2"/>
+                </filter>
+              </defs>
+            </svg>
+          </SmallTopIcon>
+        )}
+      </AnimatePresence>
+      {/* Big icon: visible when open, stays until collapse starts */}
+      <AnimatePresence>
+        {showBigIcon && (
+          <BigTopIcon
+            initial={{ opacity: 0, scale: 0.2 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.2 }}
+            transition={{ duration: 0.1 }}
+          >
+            <svg width="58" height="67" viewBox="0 0 58 67" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M28.999 33.1953L57.0371 17.3477H28.999H0.960938L28.999 33.1953Z" fill="#CFE1FD"/>
+              <path d="M29 33.1953L57.0381 17.3477L43.019 41.4238L29 65.5V33.1953Z" fill="#8FB8F6"/>
+              <path d="M0.960938 17.3476L28.999 1.5M0.960938 17.3476L28.999 33.1952M0.960938 17.3476H28.999M0.960938 17.3476V49.6524M28.999 1.5L57.0371 17.3476M28.999 1.5V17.3476M57.0371 17.3476L28.999 33.1952M57.0371 17.3476H28.999M57.0371 17.3476V49.6524M57.0371 17.3476L43.0181 41.4238M28.999 33.1952V65.5M28.999 33.1952L0.960938 49.6524M0.960938 49.6524L28.999 65.5M28.999 65.5L57.0371 49.6524M28.999 65.5L43.0181 41.4238M57.0371 49.6524L43.0181 41.4238" stroke="#1868DB" stroke-width="1.5"/>
+            </svg>
+          </BigTopIcon>
+        )}
+      </AnimatePresence>
+      {/* Close button only when open */}
+      {isOpen && !collapsing && (
+        <CloseButton
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onClick={e => { e.stopPropagation(); handleClose(); }}
+          aria-label="Close"
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="5" y1="5" x2="15" y2="15" stroke="#42526E" strokeWidth="2" strokeLinecap="round"/>
+            <line x1="15" y1="5" x2="5" y2="15" stroke="#42526E" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </CloseButton>
+      )}
+      {/* Content fades in only when open */}
+      <AnimatePresence>
+        {isOpen && showContent && !collapsing && (
+          <motion.div
+            style={{ width: '100%' }}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            variants={fadeIn}
+          >
+            <Heading size="xlarge">Atlas VibeKit</Heading>
+            <HeadingSpacer />
+            <Heading size="small">Use this file for Cursor to build prototypes using Atlassian Design System.</Heading>
+            <CardsContainer>
+              {selectedTips.map((tip, index) => (
+                <motion.div
+                  key={tip}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                  variants={fadeIn}
+                  custom={index + 2}
+                >
+                  <Card
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(tip);
+                        setCopiedIndex(index);
+                        setTimeout(() => setCopiedIndex(null), 3000);
+                      } catch (e) {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = tip;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                        setCopiedIndex(index);
+                        setTimeout(() => setCopiedIndex(null), 3000);
+                      }
+                    }}
+                  >
+                    {copiedIndex === index &&
+                      <Tooltip
+                        initial={{opacity: 0, y: 10}}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}>Copied!
+                      </Tooltip>}
+                    {tip}
+                  </Card>
+                </motion.div>
+              ))}
+            </CardsContainer>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </MorphContainer>
   );
 }
 
