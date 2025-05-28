@@ -6,18 +6,28 @@ alwaysApply: true
 
 # Your rule content
 
-General rules:
+#General rules:
 - For all the labels and headings and general text, always use sentence-casing.
 - When user asks for components, always choose first from the components that are already referenced through @atlaskit npm packages. If you cannot find the component among the ones already imported, try searching for components that available through @atlaskit first. If you can't find it, raise it to user so they can provide you with the correct component.
 - When using Atlaskit components (such as Textfield, Form, etc.), always ensure the app is wrapped in AppProvider from @atlaskit/app-provider at the root level. If you see errors from Atlaskit components related to missing context, hooks (e.g., useRef), theming, or analytics, check if AppProvider is present in the main entry file (e.g., main.tsx or index.tsx). If not present, install @atlaskit/app-provider and wrap the root <App /> with <AppProvider>. Always import @atlaskit/css-reset in the main entry file for consistent styling. If using Vite, add Atlaskit packages to optimizeDeps.include and configure commonjsOptions.include in vite.config.ts to avoid dependency optimization errors.
+- When you make a change, please keep the server up and running for a hot reloading so that I don't need to refresh. It should always work.
+- When image is referenced that you should build the UI using it, inspect it very carefully and identify all the components that exist there. At minimum, there's almost always a navigation at the top, and some main body content.
 
-Color handling:
+#Color handling:
 - Before applying the colors, try finding @atlaskit tokens first and apply it.
 - Before applying the padding and spacing sizes, try finding @atlaskit space tokens first and apply it.
 - To apply colors for headings, use color prop and color token, for example: <Heading size="large" color="color.text.inverse">
 - For general div containers, prioritize using elevation.sunken, elevation.surface, elevation.raised, and elevation.overlay background color tokens instead of background.color based on their elevation. Pair the elevation.raised with shadow.elevation.raised and elevation.overlay with shadow.elevation.overlay.
+- If user asks for theme switcher, you need to use this function:
+useEffect(() => {
+    setGlobalTheme({
+      colorMode: isDarkMode ? 'dark' : 'light'
+    });
+  }, [isDarkMode]);
+Also, you need to import setGlobalTheme like this: import { token, setGlobalTheme } from '@atlaskit/tokens';
 
-Components:
+#Components:
 - When using default (a.k.a. regular) <Button>, don't use the appearance property as it's not needed.
 - When user asks for text field, use Atlassian Design System text field: https://atlassian.design/components/textfield/examples
-- When user asks for icon(s), please refer to https://atlassian.design/components/icon/icon-explorer where you can see all the icons available. If there are no good matches, try finding the most fitting one.
+- When user asks for icon(s), please refer to https://atlassian.design/components/icon/icon-explorer where you can see all the icons available. If there are no good matches, try finding the most fitting one. Some icons are in the core folder, so the path would be e.g. @atlaskit/icon/core/goal.
+- When you see navigation at the top, use the Atlassian nav to implement it unless asked to ignore it.
