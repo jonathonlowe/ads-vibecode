@@ -7,14 +7,7 @@ A modern, designer-friendly React boilerplate that makes it easy for designers a
 ### Design System & UI Components
 - **Atlaskit Components** - Access to 100+ pre-built, accessible components
 - **Design Tokens** - Consistent colors, spacing, typography, and animations
-- **Theming Support** - Easy customization of the Atlassian Design System
-- **Responsive Design** - Built-in responsive layouts and components
-
-### Visual Development Features
-- **Hot Module Replacement** - See your changes instantly without page refresh
-- **Component Library** - Browse and use Atlaskit components in real-time
-- **Design System Documentation** - Integrated links to Atlassian Design System docs
-- **Visual Testing** - Preview components in isolation
+- **Theming Support** - Light & dark modes support
 
 ### Developer Experience
 - ⚡️ [Vite](https://vitejs.dev/) - Lightning-fast development server
@@ -55,7 +48,7 @@ Access Atlaskit's extensive component library including:
 - Navigation components (Breadcrumbs, Navigation, Tabs)
 - Data display (Tables, Cards, Lists)
 - Form elements (Buttons, Inputs, Select)
-- Feedback components (Modals, Toasts, Progress)
+- Feedback components (Modals, Flags, Progress)
 - Layout components (Grid, Container, Spacing)
 
 ### Design System Integration
@@ -63,18 +56,11 @@ Access Atlaskit's extensive component library including:
 - **Typography** - Consistent text styles and hierarchy
 - **Spacing** - Standardized spacing scale
 - **Icons** - Atlassian icon library
-- **Motion** - Pre-defined animations and transitions
-
-### Development Workflow
-1. **Component Selection** - Choose from Atlaskit's component library
-2. **Visual Editing** - Make changes and see them instantly
-3. **Responsive Testing** - Test layouts across different screen sizes
-4. **Theme Customization** - Adjust colors and styles to match your brand
+- **Motion** - Animations and transitions
 
 ## 📚 Resources
 
 - [Atlaskit Component Library](https://atlassian.design/components)
-- [Design System Documentation](https://atlassian.design/)
 - [Component Playground](http://localhost:3000) (after starting the dev server)
 
 ## 🛠️ Project Structure
