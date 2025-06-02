@@ -3,6 +3,9 @@ import styled from '@emotion/styled';
 import Heading from '@atlaskit/heading';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { Text } from '@atlaskit/primitives';
+import Toggle from '@atlaskit/toggle';
+import { createPortal } from 'react-dom';
 
 // Styled components
 const MorphContainer = styled(motion.div)`
@@ -29,9 +32,30 @@ const HeadingSpacer = styled.div`
   height: 16px;
 `;
 
-interface AppProps {}
+const ToggleFooter = styled.div`
+  position: fixed;
+  left: 50%;
+  bottom: ${token('space.300')};
+  transform: translateX(-50%);
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
 
-function App({}: AppProps) {
+const ToggleLabel = styled.div`
+  margin-top: 4px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;
+
+interface AppProps {
+  mode: 'light' | 'dark';
+  onToggleTheme: () => void;
+}
+
+function App({ mode: _mode, onToggleTheme: _onToggleTheme }: AppProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [collapsing, setCollapsing] = useState(false);
@@ -41,7 +65,7 @@ function App({}: AppProps) {
     const timer = setTimeout(() => {
       setIsOpen(true);
       setCollapsing(false);
-    }, 2000);
+    }, 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -112,7 +136,7 @@ function App({}: AppProps) {
         </svg>
       </LogoContainer>
       {/* Content fades in after morph */}
-      <div style={{ width: '100%', textAlign: 'center', minHeight: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' }}>
+      <div style={{ width: '100%', textAlign: 'center', minHeight: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', position: 'relative', height: '100%' }}>
         <AnimatePresence>
           {isOpen && showContent && !collapsing && (
             <motion.div
@@ -122,12 +146,33 @@ function App({}: AppProps) {
               transition={{ duration: 0.5 }}
               style={{ width: '100%' }}
             >
-              <Heading size="xlarge">Atlas VibeKit</Heading>
+              <Heading size="xlarge">You're all set!</Heading>
               <HeadingSpacer />
-              <Heading size="small">You're all set! Head back to Cursor and ask it to build something. It will use the Atlassian Design System to assemble the UI.</Heading>
+              <Heading size="small">Head back to Cursor and ask it to build something. It will use the Atlassian Design System to assemble the UI.</Heading>
+              <HeadingSpacer />
+              <Text color="color.text.subtlest" size="medium" as="span">
+                Atlas Vibekit
+              </Text>
             </motion.div>
           )}
         </AnimatePresence>
+        {/* Theme toggle at the bottom of the screen */}
+        {createPortal(
+          <ToggleFooter>
+            <Toggle
+              isChecked={_mode === 'dark'}
+              onChange={_onToggleTheme}
+              size="large"
+              label="Dark mode"
+            />
+            <ToggleLabel>
+              <Heading size="xsmall" color={token('color.text.subtlest') as any} as="span">
+                Dark mode
+              </Heading>
+            </ToggleLabel>
+          </ToggleFooter>,
+          document.body
+        )}
       </div>
     </MorphContainer>
   );
