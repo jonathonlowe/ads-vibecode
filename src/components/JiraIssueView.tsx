@@ -1414,24 +1414,11 @@ const assigneeOptions = [
 const sampleIssue: JiraIssue = {
   key: 'PROJ-123',
   summary: 'Implement user authentication flow with OAuth integration',
-  description: `
-## Overview
-We need to implement a comprehensive user authentication flow that supports multiple OAuth providers.
+  description: `This story focuses on building a secure and user-friendly authentication system for our application. Users will be able to sign in using their existing Google or GitHub accounts, making it quick and convenient to access our platform without creating yet another password to remember.
 
-## Requirements
-- Google OAuth integration
-- GitHub OAuth integration
-- Email/password fallback
-- JWT token management
-- Session persistence
+For users who prefer traditional email and password authentication, we'll provide that option as well. The system will handle all the complex security aspects behind the scenes, including managing login tokens and keeping users signed in across browser sessions.
 
-## Acceptance Criteria
-- [ ] Users can sign in with Google
-- [ ] Users can sign in with GitHub
-- [ ] Users can create accounts with email/password
-- [ ] Tokens are properly managed and refreshed
-- [ ] Sessions persist across browser sessions
-  `,
+This enhancement will improve the user experience by reducing friction during the sign-up and login process, while maintaining high security standards through industry-standard OAuth protocols.`,
   type: 'story',
   status: 'In Progress',
   priority: 'high',
@@ -1583,7 +1570,6 @@ const convertToPirateSpeak = (text: string): string => {
     'design': 'blueprint',
     'pattern': 'sailing route',
     'best practices': 'wisdom of old sea dogs',
-    'standards': 'pirate code',
     'guidelines': 'sailing rules',
     'documentation': 'treasure map instructions',
     'workflow': 'daily ship operations',
@@ -1653,7 +1639,6 @@ const convertToPirateSpeak = (text: string): string => {
     'troubleshooting': 'fixing ship problems',
          'debugging': 'hunting down sea monsters',
      'refactoring': 'rebuilding parts of ship',
-    'enhancement': 'improving the vessel',
     'feature request': 'crew wanting new treasure',
     'requirement': 'captain\'s orders',
     'specification': 'detailed ship plans',
@@ -1692,7 +1677,22 @@ const convertToPirateSpeak = (text: string): string => {
     'policy': 'rules of the sea',
     'procedure': 'way things be done',
     'standard': 'how all ships should sail',
-    'guideline': 'suggestions for good sailing'
+    'guideline': 'suggestions for good sailing',
+    'platform': 'ship\'s deck',
+    'account': 'pirate identity',
+    'accounts': 'pirate identities',
+    'password': 'secret phrase',
+    'passwords': 'secret phrases',
+    'sign in': 'board the ship',
+    'sign up': 'join the crew',
+    'convenient': 'easy as finding buried treasure',
+    'experience': 'adventure',
+    'enhancement': 'ship improvement',
+    'friction': 'rough seas',
+    'standards': 'pirate code',
+    'protocols': 'sailing rules',
+    'building': 'constructing',
+    'friendly': 'welcoming to all sailors'
   };
 
   let pirateText = text;
@@ -1891,8 +1891,21 @@ Let me know what sounds fun to you, or suggest something and I'll see what I can
               
               setChatMessages(prev => [...prev, completionMessage]);
               
+              // Add comment to the issue
+              const pirateComment = {
+                id: `pirate-comment-${Date.now()}`,
+                author: {
+                  name: 'Pirate Talk AI',
+                  avatarUrl: undefined
+                },
+                body: "Ahoy! 🏴‍☠️ This issue has been successfully transformed into proper pirate speak, savvy! The title and description now speak the language of the seven seas. All hands on deck - the transformation be complete! Arrr! ⚓",
+                created: new Date().toISOString()
+              };
+              
               setCurrentIssue(current => ({
                 ...current,
+                // Add the pirate comment
+                comments: [...current.comments, pirateComment],
                 // Step 4: Reassign to John Doe
                 assignee: {
                   name: 'John Doe',
@@ -1902,9 +1915,9 @@ Let me know what sounds fun to you, or suggest something and I'll see what I can
               }));
               
               setIsPirateTransforming(false);
-            }, 1000);
-          }, 2000); // Time for title transformation animation
-        }, 3000); // 3 seconds for loading bar
+            }, 3000);
+          }, 8000); // Time for title transformation animation
+        }, 10000); // 10 seconds for loading bar
       }
       
       return {
@@ -2296,7 +2309,7 @@ Let me know what sounds fun to you, or suggest something and I'll see what I can
                   </div>
                 ) : (
                   <Text>
-                    {issue.description}
+                    {currentIssue.description}
                   </Text>
                 )}
               </DescriptionContent>
@@ -2965,9 +2978,17 @@ Let me know what sounds fun to you, or suggest something and I'll see what I can
                         {msg.message}
                       </MessageBubble>
                     ) : (
-                      <div>
-                        <BotGreeting>Hello! How can I help you today?</BotGreeting>
-                        <BotMessage>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                        {isAIAgent(msg.author) ? (
+                          <AIAgentAvatar name={msg.author} size="medium" />
+                        ) : (
+                          <Avatar size="medium" name={msg.author} />
+                        )}
+                        <div style={{ flex: 1 }}>
+                          {!msg.author.includes('Pirate Talk AI') && (
+                            <BotGreeting>Hello! How can I help you today?</BotGreeting>
+                          )}
+                          <BotMessage>
                           {msg.message.split('\n').map((line, index) => {
                             if (line.startsWith('• **') && line.includes('**:')) {
                               const [title, description] = line.split('**:');
@@ -3031,6 +3052,7 @@ Let me know what sounds fun to you, or suggest something and I'll see what I can
                             </SourceItem>
                           </SourcesSection>
                         )}
+                        </div>
                       </div>
                     )}
                   </ChatMessage>
