@@ -7,7 +7,7 @@ A modern, designer-friendly React boilerplate that makes it easy for designers a
 ### Design System & UI Components
 - **Atlaskit Components** - Access to 100+ pre-built, accessible components
 - **Design Tokens** - Consistent colors, spacing, typography, and animations
-- **Theming Support** - Light & dark modes support
+- **Theming Support** - Light & dark modes support fuck around
 
 ### Developer Experience
 - ⚡️ [Vite](https://vitejs.dev/) - Lightning-fast development server
